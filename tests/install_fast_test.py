@@ -173,7 +173,7 @@ def write(dev, image, classic=False):
         return "notfound", []
     bar = []
     try:
-        up.write(ota, image, lambda k, a=None: bar.append(a) if k == "write" else None, classic)
+        up.write(ota, image, lambda k, a=None: bar.append(a) if k == "write" else None, classic, product="FM-1_900")
     except I.InstallError as e:
         return e.code, bar
     return None, bar
@@ -242,7 +242,7 @@ def main():
             ota.link.unplugged = True             # the host goes (the cable, the command killed)
         seen.append(k)
     try:
-        up.write(ota, image, unplug)
+        up.write(ota, image, unplug, product="FM-1_900")
         err = None
     except I.InstallError as e:
         err = e.code

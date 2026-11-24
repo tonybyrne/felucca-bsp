@@ -21,7 +21,11 @@
 #define FM1_FLASH_XIP_SIZE 0x100000u
 #endif
 #ifndef FM1_FLASH_PLAIN_LO
+#if BOARD_SMK37
+#define FM1_FLASH_PLAIN_LO 0x9D000u
+#else
 #define FM1_FLASH_PLAIN_LO 0x93000u
+#endif
 #endif
 #ifndef FM1_FLASH_PLAIN_HI
 #define FM1_FLASH_PLAIN_HI FM1_FLASH_XIP_SIZE
@@ -36,6 +40,9 @@
     (uint32_t)(n) <= (uint32_t)(hi) - (uint32_t)(off))
 
 /* Compatibility names; new applications supply their own regions above. */
+#if BOARD_SMK37
+#include "../boards/smk37/flash_map.h"
+#else
 #define FL_DATA_LO 0x00097000u
 #define FL_DATA_HI 0x000E0000u
 #define FL_GLOB_LO 0x000FC000u
@@ -68,9 +75,14 @@ static inline __attribute__((always_inline)) int fm1_flash_region_ok(uint32_t of
 #undef FM1_FLASH_REGION_OK
 #define FL_RANGE_OK(off, n) fm1_flash_region_ok(off, n)
 #endif
+#endif
 
 #define FL_READ_OK(off, n) FL_IN(off, n, 0u, FM1_FLASH_SIZE)
+#if BOARD_SMK37
+#define FL_WRITE_OK(off, n) (FL_READ_OK(off, n) && FL_GUARD(off, n))
+#else
 #define FL_WRITE_OK(off, n) (FL_READ_OK(off, n) && FL_RANGE_OK(off, n))
+#endif
 #define FL_PLAIN_OK(off, n) FL_IN(off, n, FM1_FLASH_PLAIN_LO, FM1_FLASH_PLAIN_HI)
 #define FL_RAM_OK(p, n) ((uintptr_t)(p) >= 0x01C00000u && \
     (uintptr_t)(p) <= 0x01C80000u && (uint32_t)(n) <= 0x01C80000u - (uintptr_t)(p))

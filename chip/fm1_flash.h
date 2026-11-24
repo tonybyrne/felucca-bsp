@@ -210,6 +210,9 @@ static RAMFN uint32_t fl_status_ram(void)                /* SR1 | SR2 << 8 */
 static RAMFN int fl_erase4k_ram(uint32_t off, uint32_t *took_us)
 {
     fl_saved_t s; int rc;
+#if BOARD_SMK37
+    if (FL_PROTECTED(off, 0x1000u)) return FL_ERR_RANGE;
+#endif
     if (!FL_WRITE_OK(off, 0x1000u) || (off & 0xFFFu))
         return FL_ERR_RANGE;
     if (!FL_RAM_OK(took_us, sizeof *took_us)) return FL_ERR_BUFFER;
@@ -234,6 +237,9 @@ static RAMFN int fl_erase4k_ram(uint32_t off, uint32_t *took_us)
  * RAM, kept for end) get the saved SFC / SPI state and the command's time */
 static RAMFN int fl_erase4k_begin_ram(uint32_t off, fl_saved_t *s, uint32_t *issued)
 {
+#if BOARD_SMK37
+    if (FL_PROTECTED(off, 0x1000u)) return FL_ERR_RANGE;
+#endif
     if (!FL_WRITE_OK(off, 0x1000u) || (off & 0xFFFu))
         return FL_ERR_RANGE;
     { int rc = fl_enter(s); if (rc) return rc; }
@@ -257,6 +263,9 @@ static RAMFN int fl_erase4k_end_ram(const fl_saved_t *s, uint32_t issued, uint32
 static RAMFN int fl_prog_ram(uint32_t off, const uint8_t *src, uint32_t n, uint32_t *took_us)
 {
     fl_saved_t s; int rc; uint32_t i;
+#if BOARD_SMK37
+    if (FL_PROTECTED(off, n)) return FL_ERR_RANGE;
+#endif
     if (!FL_WRITE_OK(off, n) ||
         n == 0 || n > 256u || ((off & 0xFFu) + n) > 256u) return FL_ERR_RANGE;    /* one page, no wrap */
     if (!FL_RAM_OK(src, n) || !FL_RAM_OK(took_us, sizeof *took_us)) return FL_ERR_BUFFER;

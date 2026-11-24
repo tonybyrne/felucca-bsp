@@ -184,7 +184,7 @@ def product_of(raw):
     """the package identity ("FM-1_906"): one marker byte after each of the first 20 blocks"""
     if len(raw) < BLOCKS * BLK:
         raise InstallError("badpkg", "not an FM-1 package (too short)")
-    return "".join(chr((m - i - 1) & 0xFF) for i in range(BLOCKS) if (m := raw[i * BLK + KEEP]) != 0x7D)
+    return "".join(chr((m - i - 1) & 0xFF) for i in range(BLOCKS) if (m := raw[i * BLK + KEEP]) != 0x7D).split("\0", 1)[0]
 
 
 def logical_image(raw):
@@ -435,8 +435,11 @@ class Updater:
                 return True
         return False
 
-    def write(self, ota, image, step, classic=False):
+    def write(self, ota, image, step, classic=False, product=None):
         """step 2: the loader reads and writes the package (the fast install when it says yes), then restarts"""
+        if not product or not re.fullmatch(r"[^_]+_\d+", product) or model_of(ota.id.text) != model_of(product):
+            ota.link.close()
+            raise InstallError("model", "loader and package identities must match before writing")
         step("write", 0)
         fast = not classic and self.fast_hello(ota.link)
         step("mode", "fast" if fast else "classic")
@@ -490,7 +493,7 @@ class Updater:
             dev.link.close()
             raise InstallError("model", f"the device is {dev.id.text}, the package is for {product}")
         ota = dev if dev.id.loader else self.check(dev, image, step)
-        self.write(ota, image, step, classic)
+        self.write(ota, image, step, classic, product)
         return self.verify(product, step)
 
 

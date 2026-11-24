@@ -11,7 +11,11 @@
  * IPS inversion), polled, at Felucca's SPI1 rate (BAUD 4).
  * Part of loader.c's single unit; every buffer is in RAM (the SPI DMA reads RAM only). */
 #ifndef LDR_SCREEN_TEST                             /* (tests/ldr_screen_test.c brings a model of the panel) */
+#if BOARD_SMK37
+#include "../boards/smk37/fm1_lcd_hw.h"
+#else
 #include "../boards/fm1/fm1_lcd_hw.h"
+#endif
 #endif
 
 #define SCR_BG 0xFFBDu                              /* #faf4e8 cream */
@@ -182,6 +186,9 @@ static void scr_percent(uint32_t pc)                /* "0%" .. "100%" */
 static void ldr_screen_init(void)
 {
     fm1_lcd_hw_init();                              /* pins, backlight on, SPI1 */
+#if BOARD_SMK37
+    smk_lcd_panel_init();
+#else
     fm1_delay_ms(20);
     scr_cmd(0x01);                                  /* SWRESET */
     fm1_delay_ms(150);
@@ -195,6 +202,7 @@ static void ldr_screen_init(void)
     scr_data(scr_small, 1);
     scr_cmd(0x21);                                  /* INVON: IPS panel */
     scr_cmd(0x13);                                  /* NORON */
+#endif
     scr_fill(0, 0, 240, 240, SCR_BG);
     scr_lines("UPDATING", "DO NOT UNPLUG", 1);
     scr_fill(SCR_BAR_X, SCR_BAR_Y, SCR_BAR_W, SCR_BAR_H, SCR_TRACK);

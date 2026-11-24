@@ -43,11 +43,19 @@
  *                          closed again); the platform keeps the rest of the data area shut
  * plus the ota.c hooks (frames, time, idle). */
 #define LDR_APP_LO 0x4000u
+#if BOARD_SMK37
+#define LDR_APP_HI 0x9D000u
+#define LDR_REC_LO 0x9D000u
+#define LDR_REC_HI 0xC0000u
+#define LDR_DATA_LO 0x9D000u
+#define LDR_DATA_HI 0xBB000u
+#else
 #define LDR_APP_HI 0x93000u
 #define LDR_REC_LO 0x93000u                     /* update records live above the app ... */
 #define LDR_REC_HI 0xFC000u                     /* ... and below Felucca's globals (Felucca's records: 0xE4F00, */
 #define LDR_DATA_LO 0x97000u                    /* the stock firmware's: 0xE8F00), never in Felucca's store, whose */
 #define LDR_DATA_HI 0xE0000u                    /* bytes (user samples) the host writes */
+#endif
 #define LDR_NSEC ((LDR_APP_HI - LDR_APP_LO) >> 12)
 #define LDR_FL_MAX 0x100000u                    /* flash.bin: at most the 1 MiB part */
 #define LDR_RES_TYPE 101u                       /* the package's res.bin (fm1-base tools/fm1pkg_make.py RES_TYPE, as
@@ -162,6 +170,12 @@ static int ldr_head(uint8_t *hdr, uint8_t *b, uint32_t *fl_off, uint32_t *fl_siz
     /* 1. UFW header + entry list (ota.c; it leaves the entries decoded in hdr) */
     if ((rc = ota_ufw(hdr, fl_off, fl_size, &ota_off, &ota_len)) != 0)
         return rc;
+#if BOARD_SMK37
+    /* Resources use the running app's guarded transfer, never the loader's VM record window. */
+    for (i = 0; i < ota_rd16(hdr + 8); i++)
+        if (ota_rd16(hdr + 0x40 + i * 0x50u) == LDR_RES_TYPE)
+            return -14;
+#endif
     if (!*fl_off || *fl_size < LDR_APP_HI || *fl_size > LDR_FL_MAX)
         return -3;
     for (i = 0; i < ota_rd16(hdr + 8); i++)

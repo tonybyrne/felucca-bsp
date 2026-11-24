@@ -3,9 +3,15 @@
 **Status: settled.** The contributors whose Felucca code is here have answered: Leo Kuroshita for the code he owns
 (https://github.com/hugelton/felucca-bsp/issues/4) and keremimo for his part of `chip/usb.c` (below).
 
-Every file under `chip/`, `boards/`, `loader/` and `examples/` is MPL-2.0 (SPDX header in each file), except two Apache-2.0 files in `chip/` from JieLi's AC79 SDK: `ble_rf_tables_v15.h` (the radio's start-up program) and `fm1_rf_cal.h` (its calibration in C). For details, see NOTICE. The full text
+Every file under `chip/`, `boards/`, `loader/` and `examples/` is MPL-2.0 (SPDX header in each file), except
+`boards/smk37/flash_map.h` and `boards/smk37/fm1_input.h` (GPL-3.0-only, adapted from the SMK branch of
+[genkigenki/Felucca](https://github.com/genkigenki/Felucca/tree/smk37), retaining its notices), and two Apache-2.0 files in `chip/` from JieLi's AC79 SDK: `ble_rf_tables_v15.h` (the radio's start-up program) and `fm1_rf_cal.h` (its calibration in C). For details, see NOTICE. The full text
 is in `LICENSE`. The files carry no "Incompatible With Secondary Licenses" notice, so they can
 be combined with GPL code under MPL-2.0 section 3.3.
+
+The SMK target includes the GPL flash map, so its combined firmware and update loader are GPL-3.0-only.
+The GPL text is in `LICENSES/GPL-3.0-only.txt` (also LOOM-8's top-level `COPYING`). The FM-1 target does not
+include the SMK headers.
 
 Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments.
 

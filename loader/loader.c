@@ -13,7 +13,12 @@
 #define FELUCCA_OTA 1
 #define FELUCCA_OTA_DRYRUN 0
 #define FELUCCA_USB_PID 0x0002
+#if BOARD_SMK37
+#include "../boards/smk37/model.h"
+#define FELUCCA_ID "ota-" SMK_MODEL "_900"
+#else
 #define FELUCCA_ID "ota-FM-1_900"
+#endif
 #define LDR_FAST_CHUNK 4096u           /* the fast install (ldr_core.c): one sector per read */
 #define OTA_FRAME_MAX 4200u            /* a decoded 4 KiB response (4111 B) */
 #define RING_PUBLISH() __asm__ volatile("" ::: "memory")
@@ -23,8 +28,12 @@
  * the head, nor Felucca's store [0x97000, 0xE0000) (user data, never a record: ldr_core.c), but for the sectors of an
  * app's resource region while ldr_core.c writes them (ldr_res_window: in RAM, as the whole loader) */
 static uint32_t ldr_res_lo, ldr_res_hi;
+#if BOARD_SMK37
+#define FL_RANGE_OK(off, n) FL_LDR_RANGE_OK(off, n)
+#else
 #define FL_RANGE_OK(off, n) (FL_IN(off, n, 0x4000u, 0x97000u) || FL_IN(off, n, 0xE0000u, 0xFC000u) || \
                              (ldr_res_hi && FL_IN(off, n, ldr_res_lo, ldr_res_hi)))
+#endif
 #include "fm1_flash.h"
 #include "../chip/libc.c"
 #include "../chip/usb.c"
